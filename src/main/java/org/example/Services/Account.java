@@ -1,5 +1,7 @@
 package org.example.Services;
 
+import org.example.Model.Transaction;
+
 import java.util.Date;
 
 public class Account {
@@ -7,6 +9,8 @@ public class Account {
     private String userName;
     private String password;
     private final Date createDate;
+
+    private Transaction[] transactions;
 
     public Account(String userName, String password) {
         this.userName = userName;
@@ -39,5 +43,9 @@ public class Account {
 
     public Date getCreateDate() {
         return createDate;
+    }
+
+    public Transaction[] getTransactions() {
+        return transactions;
     }
 }
