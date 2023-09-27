@@ -1,6 +1,8 @@
 package org.example.Services;
 
 import org.example.Model.Account;
+import org.example.Model.Transaction;
+import org.example.Model.TransactionType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,4 +37,23 @@ public class Bank {
         accounts.get(userName).close();
     }
 
+    public void deposit(String userName, double amount) {
+        accounts.get(userName).addToBalance(amount);
+        Transaction depositTransaction = new Transaction(null, userName, amount, TransactionType.DEPOSIT );
+        accounts.get(userName).addTransaction(depositTransaction);
+    }
+    public void withdraw(String userName, double amount) {
+        accounts.get(userName).subtractBalance(amount);
+        Transaction withdrawTransaction = new Transaction(userName, null, amount, TransactionType.WITHDRAW );
+        accounts.get(userName).addTransaction(withdrawTransaction);
+    }
+
+    public void transfer(String fromUserName, String toUserName, double amount){
+        accounts.get(fromUserName).subtractBalance(amount);
+        accounts.get(toUserName).addToBalance(amount);
+        Transaction transferTransaction = new Transaction(fromUserName, toUserName, amount, TransactionType.TRANSFER );
+        accounts.get(fromUserName).addTransaction(transferTransaction);
+        accounts.get(toUserName).addTransaction(transferTransaction);
+
+    }
 }
