@@ -28,6 +28,12 @@ public class Main {
         System.out.println("Chan Balance: "+ chanBalance);
         System.out.println("Wong Balance: "+ wongBalance);
         System.out.println("Henry Balance: "+ henryBalance);
+        try {
+            ABCBank.closeAccount("chan239xx2");
+            ABCBank.deposit("chan239xx2", 100);
+        } catch (Exception e) {
+            System.out.println("Error: "+ e);
+        }
 
 
     }
