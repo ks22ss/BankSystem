@@ -21,13 +21,17 @@ public class Account {
         this.createDate = new Date();
         this.balance = 0;
         this.isActive = true;
+        this.transactions = new ArrayList<Transaction>();
     }
     public double getBalance() {
         return balance;
     }
 
-    public void setBalance(double balance) {
-        this.balance = balance;
+    public void addToBalance(double amount) {
+        this.balance += amount;
+    }
+    public void subtractBalance(double amount) {
+        this.balance -= amount;
     }
 
     public String getUserName() {
@@ -60,5 +64,9 @@ public class Account {
 
     public void close() {
         isActive = false;
+    }
+
+    public void addTransaction(Transaction transaction) {
+        this.transactions.add(transaction);
     }
 }
