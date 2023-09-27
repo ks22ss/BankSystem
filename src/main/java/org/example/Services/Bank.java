@@ -35,7 +35,11 @@ public class Bank {
         this.accounts.put(userName, account);
     }
 
-    public void closeAccount(String userName) {
+    public void closeAccount(String userName) throws AccountNotExceedException {
+        Account account = accounts.get(userName);
+        if (account == null) {
+            throw new AccountNotExceedException(userName);
+        }
         accounts.get(userName).close();
     }
 
