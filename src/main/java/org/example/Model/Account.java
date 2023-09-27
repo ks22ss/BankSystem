@@ -11,6 +11,8 @@ public class Account {
     private String password;
     private final Date createDate;
 
+    private boolean isActive;
+
     private ArrayList<Transaction> transactions;
 
     public Account(String userName, String password) {
@@ -18,6 +20,7 @@ public class Account {
         this.password = password;
         this.createDate = new Date();
         this.balance = 0;
+        this.isActive = true;
     }
     public double getBalance() {
         return balance;
@@ -49,5 +52,13 @@ public class Account {
 
     public ArrayList<Transaction> getTransactions() {
         return transactions;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void close() {
+        isActive = false;
     }
 }
