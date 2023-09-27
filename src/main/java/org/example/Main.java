@@ -2,13 +2,15 @@ package org.example;
 
 import org.example.Exception.AccountClosedException;
 import org.example.Exception.AccountNotExceedException;
+import org.example.Exception.BalanceNotEnoughException;
+import org.example.Exception.ProductNotExistException;
 import org.example.Model.Transaction;
 import org.example.Services.Bank;
 
 import java.util.ArrayList;
 
 public class Main {
-    public static void main(String[] args) throws AccountNotExceedException, AccountClosedException {
+    public static void main(String[] args) throws AccountNotExceedException, AccountClosedException, ProductNotExistException, BalanceNotEnoughException {
 
         // Start by initialize a bank
         Bank ABCBank = Bank.getInstance();
@@ -34,6 +36,13 @@ public class Main {
 
         ArrayList<Transaction> wongTransactionList = ABCBank.readTransaction("wong22312");
         System.out.println(wongTransactionList.get(0).toString());
+
+        ABCBank.queryAllProduct();
+
+        ABCBank.subscribeProduct("henry7482", "FIX_6_00002B", 1000);
+        ABCBank.subscribeProduct("henry7482", "LOAN_12_00001D", 2000);
+
+        ABCBank.queryMySubscription("henry7482");
 
         try {
             ABCBank.closeAccount("chan239xx2");
