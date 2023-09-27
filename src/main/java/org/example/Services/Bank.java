@@ -3,13 +3,15 @@ package org.example.Services;
 import org.example.Model.Account;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Bank {
     private static Bank instance;
-    private ArrayList<Account> accounts;
+    private Map<String, Account> accounts;
 
     private Bank() {
-        this.accounts = new ArrayList<Account>();
+        this.accounts = new HashMap<String, Account>();
     }
 
 
@@ -26,22 +28,11 @@ public class Bank {
 
     public void openAccount(String userName, String password) {
         Account account = new Account(userName, password);
-        this.accounts.add(account);
+        this.accounts.put(userName, account);
     }
 
     public void closeAccount(String userName) {
-        Account account = this.searchAccount(userName);
-        account.close();
+        accounts.get(userName).close();
     }
 
-    public Account searchAccount(String userName) {
-        Account foundAccount = null;
-        for (Account acc : this.accounts){
-            if(acc.getUserName().equals(userName)){
-                foundAccount = acc;
-                break;
-            }
-        }
-        return foundAccount;
-    }
 }
