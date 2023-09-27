@@ -42,10 +42,10 @@ public class Bank {
     public double readBalance(String userName) throws AccountClosedException, AccountNotExceedException {
         Account account = accounts.get(userName);
         if (account == null) {
-            throw new AccountNotExceedException();
+            throw new AccountNotExceedException(userName);
         }
         if (!account.isActive()) {
-            throw  new AccountClosedException();
+            throw  new AccountClosedException(userName);
         }
         return account.getBalance();
     }
