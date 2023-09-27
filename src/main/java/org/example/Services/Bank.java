@@ -54,6 +54,17 @@ public class Bank {
         return account.getBalance();
     }
 
+    public ArrayList<Transaction> readTransaction(String userName) throws AccountClosedException, AccountNotExceedException {
+        Account account = accounts.get(userName);
+        if (account == null) {
+            throw new AccountNotExceedException(userName);
+        }
+        if (!account.isActive()) {
+            throw  new AccountClosedException(userName);
+        }
+        return account.getTransactions();
+    }
+
     public void deposit(String userName, double amount) throws AccountClosedException, AccountNotExceedException {
         Account account = accounts.get(userName);
         if (account == null) {

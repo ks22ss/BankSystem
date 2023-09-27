@@ -21,4 +21,8 @@ public class Transaction {
         this.transactionType = transactionType;
     }
 
+    @Override
+    public String toString() {
+        return "ID="+this.id+" "+"transactionDate="+this.transactionDate+" "+"from="+this.from+" "+"to="+this.to+" "+"amount="+this.amount+" "+"transactionType="+this.transactionType;
+    }
 }

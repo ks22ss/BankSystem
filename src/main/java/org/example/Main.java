@@ -2,7 +2,10 @@ package org.example;
 
 import org.example.Exception.AccountClosedException;
 import org.example.Exception.AccountNotExceedException;
+import org.example.Model.Transaction;
 import org.example.Services.Bank;
+
+import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) throws AccountNotExceedException, AccountClosedException {
@@ -28,9 +31,13 @@ public class Main {
         System.out.println("Chan Balance: "+ chanBalance);
         System.out.println("Wong Balance: "+ wongBalance);
         System.out.println("Henry Balance: "+ henryBalance);
+
+        ArrayList<Transaction> wongTransactionList = ABCBank.readTransaction("wong22312");
+        System.out.println(wongTransactionList.get(0).toString());
+
         try {
             ABCBank.closeAccount("chan239xx2");
-            ABCBank.deposit("chan239xx2", 100);
+            //ABCBank.deposit("chan239xx2", 100);
         } catch (Exception e) {
             System.out.println("Error: "+ e);
         }
