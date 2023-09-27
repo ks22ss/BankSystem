@@ -1,9 +1,11 @@
 package org.example;
 
+import org.example.Exception.AccountClosedException;
+import org.example.Exception.AccountNotExceedException;
 import org.example.Services.Bank;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws AccountNotExceedException, AccountClosedException {
 
         // Start by initialize a bank
         Bank ABCBank = Bank.getInstance();
