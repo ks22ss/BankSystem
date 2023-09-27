@@ -1,7 +1,8 @@
-package org.example.Services;
+package org.example.Model;
 
 import org.example.Model.Transaction;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 public class Account {
@@ -10,12 +11,13 @@ public class Account {
     private String password;
     private final Date createDate;
 
-    private Transaction[] transactions;
+    private ArrayList<Transaction> transactions;
 
     public Account(String userName, String password) {
         this.userName = userName;
         this.password = password;
         this.createDate = new Date();
+        this.balance = 0;
     }
     public double getBalance() {
         return balance;
@@ -45,7 +47,7 @@ public class Account {
         return createDate;
     }
 
-    public Transaction[] getTransactions() {
+    public ArrayList<Transaction> getTransactions() {
         return transactions;
     }
 }
