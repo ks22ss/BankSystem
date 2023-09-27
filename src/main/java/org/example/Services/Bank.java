@@ -1,5 +1,7 @@
 package org.example.Services;
 
+import org.example.Exception.AccountClosedException;
+import org.example.Exception.AccountNotExceedException;
 import org.example.Model.Account;
 import org.example.Model.Transaction;
 import org.example.Model.TransactionType;
@@ -37,23 +39,63 @@ public class Bank {
         accounts.get(userName).close();
     }
 
-    public void deposit(String userName, double amount) {
-        accounts.get(userName).addToBalance(amount);
-        Transaction depositTransaction = new Transaction(null, userName, amount, TransactionType.DEPOSIT );
-        accounts.get(userName).addTransaction(depositTransaction);
-    }
-    public void withdraw(String userName, double amount) {
-        accounts.get(userName).subtractBalance(amount);
-        Transaction withdrawTransaction = new Transaction(userName, null, amount, TransactionType.WITHDRAW );
-        accounts.get(userName).addTransaction(withdrawTransaction);
+    public double readBalance(String userName) throws AccountClosedException, AccountNotExceedException {
+        Account account = accounts.get(userName);
+        if (account == null) {
+            throw new AccountNotExceedException();
+        }
+        if (!account.isActive()) {
+            throw  new AccountClosedException();
+        }
+        return account.getBalance();
     }
 
-    public void transfer(String fromUserName, String toUserName, double amount){
-        accounts.get(fromUserName).subtractBalance(amount);
-        accounts.get(toUserName).addToBalance(amount);
+    public void deposit(String userName, double amount) throws AccountClosedException, AccountNotExceedException {
+        Account account = accounts.get(userName);
+        if (account == null) {
+            throw new AccountNotExceedException(userName);
+        }
+        if (!account.isActive()) {
+            throw new AccountClosedException(userName);
+        }
+        account.addToBalance(amount);
+        Transaction depositTransaction = new Transaction(null, userName, amount, TransactionType.DEPOSIT );
+        account.addTransaction(depositTransaction);
+    }
+    public void withdraw(String userName, double amount) throws AccountClosedException, AccountNotExceedException {
+        Account account = accounts.get(userName);
+        if (account == null) {
+            throw new AccountNotExceedException(userName);
+        }
+        if (!account.isActive()) {
+            throw new AccountClosedException(userName);
+        }
+        account.subtractBalance(amount);
+        Transaction withdrawTransaction = new Transaction(userName, null, amount, TransactionType.WITHDRAW );
+        account.addTransaction(withdrawTransaction);
+    }
+
+    public void transfer(String fromUserName, String toUserName, double amount) throws AccountClosedException, AccountNotExceedException {
+        Account fromAccount = accounts.get(fromUserName);
+        Account toAccount = accounts.get(toUserName);
+        if (fromAccount == null) {
+            throw new AccountNotExceedException(fromUserName);
+        }
+        if (toAccount == null) {
+            throw new AccountNotExceedException(toUserName);
+        }
+        if (!fromAccount.isActive()) {
+            throw new AccountClosedException(fromUserName);
+        }
+        if (!toAccount.isActive()) {
+            throw new AccountClosedException(toUserName);
+        }
+
+        fromAccount.subtractBalance(amount);
+        toAccount.addToBalance(amount);
         Transaction transferTransaction = new Transaction(fromUserName, toUserName, amount, TransactionType.TRANSFER );
-        accounts.get(fromUserName).addTransaction(transferTransaction);
-        accounts.get(toUserName).addTransaction(transferTransaction);
+        fromAccount.addTransaction(transferTransaction);
+        toAccount.addTransaction(transferTransaction);
 
     }
 }
