@@ -1,5 +1,7 @@
 package org.example.Model;
 
+import org.example.Model.Products.FinancialProduct;
+import org.example.Model.Products.ProductType;
 import org.example.Model.Transaction;
 
 import java.util.ArrayList;
@@ -14,6 +16,7 @@ public class Account {
     private boolean isActive;
 
     private ArrayList<Transaction> transactions;
+    private ArrayList<FinancialProduct> subscriptions;
 
     public Account(String userName, String password) {
         this.userName = userName;
@@ -22,6 +25,7 @@ public class Account {
         this.balance = 0;
         this.isActive = true;
         this.transactions = new ArrayList<Transaction>();
+        this.subscriptions = new ArrayList<FinancialProduct>();
     }
     public double getBalance() {
         return balance;
@@ -68,5 +72,13 @@ public class Account {
 
     public void addTransaction(Transaction transaction) {
         this.transactions.add(transaction);
+    }
+
+    public ArrayList<FinancialProduct> getSubscriptions() {
+        return subscriptions;
+    }
+
+    public void subscribe(FinancialProduct product){
+        this.subscriptions.add(product);
     }
 }
