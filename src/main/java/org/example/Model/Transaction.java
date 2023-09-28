@@ -25,4 +25,28 @@ public class Transaction {
     public String toString() {
         return "ID="+this.id+" "+"transactionDate="+this.transactionDate+" "+"from="+this.from+" "+"to="+this.to+" "+"amount="+this.amount+" "+"transactionType="+this.transactionType;
     }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public Date getTransactionDate() {
+        return transactionDate;
+    }
+
+    public TransactionType getTransactionType() {
+        return transactionType;
+    }
+
+    public String getFrom() {
+        return from;
+    }
+
+    public String getTo() {
+        return to;
+    }
+
+    public UUID getId() {
+        return id;
+    }
 }
