@@ -1,6 +1,4 @@
-import org.example.Exception.AccountAlreadyExist;
-import org.example.Exception.AccountClosedException;
-import org.example.Exception.AccountNotExistException;
+import org.example.Exception.*;
 import org.example.Model.Products.FinancialProduct;
 import org.example.Model.Transaction;
 import org.example.Services.Account;
@@ -141,5 +139,14 @@ public class BankTest {
         Assertions.assertFalse(products.isEmpty());
     }
 
-
+    @Test
+    public void testSubscription() throws AccountAlreadyExist, AccountClosedException, AccountNotExistException, ProductNotExistException, BalanceNotEnoughException {
+        Account account1 = myBank.openAccount("testuser1234","12345");
+        myBank.deposit("testuser1234", 100000);
+        Assertions.assertEquals(myBank.readBalance("testuser1234"), 100000);
+        FinancialProduct product = myBank.subscribeProduct("testuser1234","FIX_6_00001A", 100000);
+        Assertions.assertEquals(myBank.readBalance("testuser1234"), 0);
+        ArrayList<FinancialProduct> subscriptions = myBank.queryMySubscription("testuser1234");
+        Assertions.assertTrue(subscriptions.contains(product));
+    }
 }

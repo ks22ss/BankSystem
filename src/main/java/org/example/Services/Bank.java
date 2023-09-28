@@ -145,7 +145,7 @@ public class Bank {
         return financialProductMap;
     }
 
-    public void queryMySubscription(String userName) throws AccountClosedException, AccountNotExistException {
+    public ArrayList<FinancialProduct> queryMySubscription(String userName) throws AccountClosedException, AccountNotExistException {
         Account account = accounts.get(userName);
         if (account == null) {
             throw new AccountNotExistException(userName);
@@ -158,10 +158,11 @@ public class Bank {
         for (FinancialProduct product : productsSubscribed) {
             System.out.println(product.getName());
         }
+        return productsSubscribed;
     }
 
 
-    public void subscribeProduct(String userName, String productName, double principle) throws AccountClosedException, AccountNotExistException, ProductNotExistException, BalanceNotEnoughException{
+    public FinancialProduct subscribeProduct(String userName, String productName, double principle) throws AccountClosedException, AccountNotExistException, ProductNotExistException, BalanceNotEnoughException{
         Account account = accounts.get(userName);
         if (account == null) {
             throw new AccountNotExistException(userName);
@@ -175,12 +176,14 @@ public class Bank {
             throw new ProductNotExistException(productName);
         }
 
-        if (principle >= account.getBalance()){
+        if (principle > account.getBalance()){
             throw new BalanceNotEnoughException();
         }
         product.setPrinciple(principle);
         account.subscribe(product);
 
         account.subtractBalance(principle);
+
+        return product;
     }
 }
