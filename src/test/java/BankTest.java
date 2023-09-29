@@ -1,152 +1,139 @@
-import org.example.Exception.*;
-import org.example.Model.Products.FinancialProduct;
+import org.example.DBConnection;
+import org.example.Model.Account;
 import org.example.Model.Transaction;
-import org.example.Services.Account;
 import org.example.Services.Bank;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.List;
 
 public class BankTest {
 
-    private Bank myBank;
+    private Bank bank;
+    private String testUser1 = "testuser1";
+    private String testUser2 = "testuser2";
+    private String testPassword = "1234";
+
+
+
     @BeforeEach
     public void setUp() {
-        myBank = new Bank();
+        System.out.println("Clean Up.");
+        SessionFactory sessionFactory = DBConnection.getSessionFactory();
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        session.createNativeQuery("TRUNCATE TABLE bank_accounts, bank_transactions").executeUpdate();
+        session.getTransaction().commit();
     }
 
     @Test
-    public void testOpenAccount() throws AccountAlreadyExist {
-        Account account = myBank.openAccount("testuser1234","12345");
-        Map<String, Account> allAccount = myBank.queryAllAccount();
-        Assertions.assertTrue(allAccount.containsKey("testuser1234"));
-        Assertions.assertTrue(allAccount.containsValue(account));
+    public void testOpenAccount() {
+        bank = new Bank("ABC Bank");
+        Account account = bank.openAccount(testUser1, testPassword);
+        Assertions.assertNotNull(account);
+        Assertions.assertEquals(testUser1, account.getUserName());
+        Assertions.assertEquals(testPassword, account.getPassword());
     }
 
     @Test
-    public void testCloseAccount() throws AccountAlreadyExist, AccountNotExistException {
-        Account account = myBank.openAccount("testuser1234","12345");
-        boolean success = myBank.closeAccount("testuser1234");
-        Assertions.assertTrue(success);
-        Map<String, Account> allAccount = myBank.queryAllAccount();
-        Assertions.assertTrue(allAccount.containsKey("testuser1234"));
-        Assertions.assertTrue(allAccount.containsValue(account));
-        Assertions.assertFalse(account.isActive());
+    public void testOpenAccountAlreadyOpen() {
+        bank = new Bank("ABC Bank");
+        Account account = bank.openAccount(testUser1, testPassword);
+        Assertions.assertNotNull(account);
+        Assertions.assertEquals(testUser1, account.getUserName());
+        Assertions.assertEquals(testPassword, account.getPassword());
+
+        Account accountRepeated = bank.openAccount(testUser1, testPassword);
+        Assertions.assertEquals(null, accountRepeated);
+    }
+
+
+    @Test
+    public void testCloseAccount() {
+        bank = new Bank("ABC Bank");
+        Account account = bank.openAccount(testUser1, testPassword);
+        Assertions.assertNotNull(account);
+        boolean result = bank.closeAccount(testUser1);
+        Assertions.assertTrue(result);
+        Assertions.assertFalse(bank.readAccountStatus(testUser1));
+    }
+    @Test
+    public void testCloseAccountThatNotExist() {
+        bank = new Bank("ABC Bank");
+        Account account = bank.openAccount(testUser1, testPassword);
+        Assertions.assertNotNull(account);
+        boolean result = bank.closeAccount(testUser2);
+        Assertions.assertFalse(result);
+    }
+    @Test
+    public void testDeposit() {
+        bank = new Bank("ABC Bank");
+        Account account = bank.openAccount(testUser1, testPassword);
+        Assertions.assertNotNull(account);
+        Transaction deposit = bank.deposit(testUser1, 10000);
+        Assertions.assertNotNull(deposit);
+        Assertions.assertEquals(10000, deposit.getAmount());
+        Assertions.assertEquals(bank.getNullAccount().getUserName(),deposit.getFromAccount().getUserName());
+        Assertions.assertEquals(account.getUserName(),deposit.getToAccount().getUserName());
+        Assertions.assertEquals(10000, bank.readBalance(testUser1));
     }
 
     @Test
-    public void testReadBalance() throws AccountAlreadyExist, AccountClosedException, AccountNotExistException {
-        Account account = myBank.openAccount("testuser1234","12345");
-        myBank.deposit("testuser1234", 10000);
-        double balance = myBank.readBalance("testuser1234");
-        Assertions.assertEquals(balance, 10000);
-        myBank.deposit("testuser1234", 5000);
-        balance = myBank.readBalance("testuser1234");
-        Assertions.assertEquals(balance, 15000);
+    public void testWithdrawal() {
+        bank = new Bank("ABC Bank");
+        Account account = bank.openAccount(testUser1, testPassword);
+        Assertions.assertNotNull(account);
+        Transaction deposit = bank.deposit(testUser1, 10000);
+        Transaction withdraw = bank.withdraw(testUser1, 6000);
+        Assertions.assertNotNull(withdraw);
+        Assertions.assertEquals(6000, withdraw.getAmount());
+        Assertions.assertEquals(account.getUserName(), withdraw.getFromAccount().getUserName());
+        Assertions.assertEquals(bank.getNullAccount().getUserName(), withdraw.getToAccount().getUserName());
+        Assertions.assertEquals(4000, bank.readBalance(testUser1));
     }
 
     @Test
-    public void testReadTransaction() throws AccountAlreadyExist, AccountClosedException, AccountNotExistException {
-        ArrayList<Transaction> transactions;
+    public void testTransfer() {
+        bank = new Bank("ABC Bank");
 
-        Account account1 = myBank.openAccount("testuser1234","12345");
-        Account account2 = myBank.openAccount("testuser5432","12345");
+        Account account1 = bank.openAccount(testUser1, testPassword);
+        Account account2 = bank.openAccount(testUser2, testPassword);
 
-        //Deposit
-        Transaction depositTransaction = myBank.deposit("testuser1234", 10000);
-        transactions = myBank.readTransaction("testuser1234");
-        Assertions.assertTrue(transactions.contains(depositTransaction));
+        Assertions.assertNotNull(account1);
+        Assertions.assertNotNull(account2);
 
-        //Withdraw
-        Transaction withdrawTransaction = myBank.withdraw("testuser1234", 5000);
-        transactions = myBank.readTransaction("testuser1234");
-        Assertions.assertTrue(transactions.contains(withdrawTransaction));
+        Transaction deposit1 = bank.deposit(testUser1, 10000);
+        Transaction deposit2 = bank.deposit(testUser2, 20000);
+        Transaction transfer = bank.transfer(testUser1, testUser2, 8000);
+        Assertions.assertNotNull(transfer);
+        Assertions.assertEquals(8000, transfer.getAmount());
+        Assertions.assertEquals(account1.getUserName(), transfer.getFromAccount().getUserName());
+        Assertions.assertEquals(account2.getUserName(), transfer.getToAccount().getUserName());
+        Assertions.assertEquals(2000, bank.readBalance(testUser1));
+        Assertions.assertEquals(28000, bank.readBalance(testUser2));
 
-
-        ArrayList<Transaction> transactions1;
-        ArrayList<Transaction> transactions2;
-        //Transfer
-        Transaction transferTransaction = myBank.transfer("testuser1234", "testuser5432", 2000);
-        transactions1 = myBank.readTransaction("testuser1234");
-        transactions2 = myBank.readTransaction("testuser5432");
-
-        Assertions.assertTrue(transactions1.contains(transferTransaction));
-        Assertions.assertTrue(transactions2.contains(transferTransaction));
     }
 
     @Test
-    public void testDeposit() throws AccountAlreadyExist, AccountClosedException, AccountNotExistException {
-        Account account = myBank.openAccount("testuser1234","12345");
+    public void testDistributeInterest() {
+        bank = new Bank("ABC Bank",0.01);
 
-        Transaction depositTransaction = myBank.deposit("testuser1234", 10000);
-        Assertions.assertEquals(depositTransaction.getAmount(), 10000);
-        Assertions.assertEquals(myBank.readBalance("testuser1234"), 10000);
+        Account account1 = bank.openAccount(testUser1, testPassword);
+        Account account2 = bank.openAccount(testUser2, testPassword);
 
-        Transaction depositTransaction2 = myBank.deposit("testuser1234", 4500);
-        Assertions.assertEquals(depositTransaction2.getAmount(), 4500);
-        Assertions.assertEquals(myBank.readBalance("testuser1234"), 14500);
+        Assertions.assertNotNull(account1);
+        Assertions.assertNotNull(account2);
+
+        Transaction deposit1 = bank.deposit(testUser1, 10000);
+        Transaction deposit2 = bank.deposit(testUser2, 20000);
+
+        bank.distributeInterest();
+
+        Assertions.assertEquals(10000*1.01, bank.readBalance(testUser1));
+        Assertions.assertEquals(20000*1.01, bank.readBalance(testUser2));
     }
 
-    @Test
-    public void testWithdraw() throws AccountAlreadyExist, AccountClosedException, AccountNotExistException {
-        Account account = myBank.openAccount("testuser1234","12345");
-
-        Transaction depositTransaction = myBank.deposit("testuser1234", 10000);
-
-        Transaction withdrawTransaction1 = myBank.withdraw("testuser1234", 6000);
-        Assertions.assertEquals(withdrawTransaction1.getAmount(), 6000);
-        Assertions.assertEquals(myBank.readBalance("testuser1234"), 4000);
-
-        Transaction withdrawTransaction2 = myBank.withdraw("testuser1234", 2500);
-        Assertions.assertEquals(withdrawTransaction2.getAmount(), 2500);
-        Assertions.assertEquals(myBank.readBalance("testuser1234"), 1500);
-    }
-
-    @Test
-    public void testTransfer() throws AccountAlreadyExist, AccountClosedException, AccountNotExistException {
-        Account account1 = myBank.openAccount("testuser1234","12345");
-        Account account2 = myBank.openAccount("testuser5432","12345");
-
-        Transaction depositTransaction = myBank.deposit("testuser1234", 10000);
-        Transaction transferTransaction = myBank.transfer("testuser1234", "testuser5432", 10000);
-
-        Assertions.assertEquals(transferTransaction.getFrom(), "testuser1234");
-        Assertions.assertEquals(transferTransaction.getTo(), "testuser5432");
-        Assertions.assertEquals(transferTransaction.getAmount(), 10000);
-
-        Assertions.assertEquals(myBank.readBalance("testuser1234"), 0);
-        Assertions.assertEquals(myBank.readBalance("testuser5432"), 10000);
-    }
-
-    @Test
-    public void testQueryAllAccount() throws AccountAlreadyExist{
-        Map<String, Account> accounts = myBank.queryAllAccount();
-        Assertions.assertTrue(accounts.isEmpty());
-
-        Account account1 = myBank.openAccount("testuser1234","12345");
-        Assertions.assertFalse(accounts.isEmpty());
-        Assertions.assertTrue(accounts.containsKey("testuser1234"));
-        Assertions.assertTrue(accounts.containsValue(account1));
-    }
-
-    @Test
-    public void testQueryAllProduct() {
-        Map<String, FinancialProduct> products = myBank.queryAllProduct();
-        Assertions.assertFalse(products.isEmpty());
-    }
-
-    @Test
-    public void testSubscription() throws AccountAlreadyExist, AccountClosedException, AccountNotExistException, ProductNotExistException, BalanceNotEnoughException {
-        Account account1 = myBank.openAccount("testuser1234","12345");
-        myBank.deposit("testuser1234", 100000);
-        Assertions.assertEquals(myBank.readBalance("testuser1234"), 100000);
-        FinancialProduct product = myBank.subscribeProduct("testuser1234","FIX_6_00001A", 100000);
-        Assertions.assertEquals(myBank.readBalance("testuser1234"), 0);
-        ArrayList<FinancialProduct> subscriptions = myBank.queryMySubscription("testuser1234");
-        Assertions.assertTrue(subscriptions.contains(product));
-    }
 }

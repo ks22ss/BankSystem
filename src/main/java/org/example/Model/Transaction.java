@@ -1,30 +1,48 @@
 package org.example.Model;
 
+import jakarta.persistence.*;
+
 import java.util.Date;
-import java.util.UUID;
 
+
+@Entity
+@Table(name = "bank_transactions")
 public class Transaction {
-    private final UUID id;
-    private final Date transactionDate;
 
-    private final TransactionType transactionType;
-    private final String from;
-    private final String to;
-    private final double amount;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long transactionId;
 
-    public Transaction(String from, String to, double amount, TransactionType transactionType) {
-        this.id = UUID.randomUUID();
-        this.transactionDate = new Date();
-        this.from = from;
-        this.to = to;
+    @Column(nullable = false)
+    private final Date transactionDate = new Date();
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TransactionType transactionType;
+
+    @ManyToOne
+    @JoinColumn(name = "fromUserName")
+    private Account fromAccount;
+
+    @ManyToOne
+    @JoinColumn(name = "toUserName")
+    private Account toAccount;
+
+    @Column(nullable = false)
+    private double amount;
+
+
+
+    public Transaction() {
+
+    }
+    public Transaction(Account fromAccount, Account toAccount, double amount, TransactionType transactionType) {
+        this.fromAccount = fromAccount;
+        this.toAccount = toAccount;
         this.amount = amount;
         this.transactionType = transactionType;
     }
 
-    @Override
-    public String toString() {
-        return "ID="+this.id+" "+"transactionDate="+this.transactionDate+" "+"from="+this.from+" "+"to="+this.to+" "+"amount="+this.amount+" "+"transactionType="+this.transactionType;
-    }
 
     public double getAmount() {
         return amount;
@@ -38,15 +56,27 @@ public class Transaction {
         return transactionType;
     }
 
-    public String getFrom() {
-        return from;
+    public Account getFromAccount() {
+        return fromAccount;
     }
 
-    public String getTo() {
-        return to;
+    public Account getToAccount() {
+        return toAccount;
     }
 
-    public UUID getId() {
-        return id;
+    public long getId() {
+        return transactionId;
+    }
+
+    @Override
+    public String toString() {
+        return "Transaction{" +
+                "transactionId=" + transactionId +
+                ", transactionDate=" + transactionDate +
+                ", transactionType=" + transactionType +
+                ", fromAccount=" + fromAccount +
+                ", toAccount=" + toAccount +
+                ", amount=" + amount +
+                '}';
     }
 }

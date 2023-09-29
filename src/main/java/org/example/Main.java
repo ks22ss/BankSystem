@@ -1,19 +1,22 @@
 package org.example;
 
-import org.example.Exception.*;
-import org.example.Model.Products.FinancialProduct;
+
+import org.example.Model.Account;
 import org.example.Model.Transaction;
 import org.example.Services.Bank;
 
-import java.util.ArrayList;
-import java.util.Map;
+
+import java.sql.*;
 
 public class Main {
-    public static void main(String[] args) throws AccountNotExistException, AccountClosedException, ProductNotExistException, BalanceNotEnoughException, AccountAlreadyExist {
+    public static void main(String[] args) throws Exception{
+        try {
+            Bank myBank = new Bank("ABC Bank");
 
-    Bank bank = new Bank();
 
-
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 }
