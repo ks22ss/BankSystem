@@ -1,5 +1,7 @@
 import org.example.DBConnection;
 import org.example.Model.Account;
+import org.example.Model.Product.LoanProduct;
+import org.example.Model.Product.SavingProduct;
 import org.example.Model.Transaction;
 import org.example.Services.Bank;
 import org.hibernate.Session;
@@ -25,7 +27,10 @@ public class BankTest {
         SessionFactory sessionFactory = DBConnection.getSessionFactory();
         Session session = sessionFactory.openSession();
         session.beginTransaction();
-        session.createNativeQuery("TRUNCATE TABLE bank_accounts, bank_transactions").executeUpdate();
+        session.createNativeQuery("TRUNCATE TABLE bank_accounts, bank_transactions, " +
+                "bank_loan_subscriptions, bank_saving_subscriptions, " +
+                "bank_loan_products, bank_saving_products" +
+                " CASCADE").executeUpdate();
         session.getTransaction().commit();
     }
 
@@ -116,24 +121,32 @@ public class BankTest {
         Assertions.assertEquals(28000, bank.readBalance(testUser2));
 
     }
+    @Test
+    public void testAddGetSubscribeSavingProduct() {
+        bank = new Bank("ABC Bank");
+        Account account1 = bank.openAccount(testUser1, testPassword);
+        Transaction deposit1 = bank.deposit(testUser1, 10000);
+        bank.addSavingProduct(new SavingProduct("SAVE_U82_0001",36,0.01,10000));
+        SavingProduct savingProduct = bank.getSavingProduct("SAVE_U82_0001");
+        Assertions.assertEquals("SAVE_U82_0001", savingProduct.getProductCode());
+        boolean success = bank.subscribeSaving(testUser1, "SAVE_U82_0001");
+        Assertions.assertTrue(success);
+    }
 
     @Test
-    public void testDistributeInterest() {
-        bank = new Bank("ABC Bank",0.01);
-
+    public void testAddGetSubscribeLoanProduct() {
+        bank = new Bank("ABC Bank");
         Account account1 = bank.openAccount(testUser1, testPassword);
-        Account account2 = bank.openAccount(testUser2, testPassword);
-
-        Assertions.assertNotNull(account1);
-        Assertions.assertNotNull(account2);
-
         Transaction deposit1 = bank.deposit(testUser1, 10000);
-        Transaction deposit2 = bank.deposit(testUser2, 20000);
-
-        bank.distributeInterest();
-
-        Assertions.assertEquals(10000*1.01, bank.readBalance(testUser1));
-        Assertions.assertEquals(20000*1.01, bank.readBalance(testUser2));
+        bank.addLoanProduct(new LoanProduct("LOAN_U82_0001",36,0.01,10000));
+        LoanProduct loanProduct = bank.getLoanProduct("LOAN_U82_0001");
+        Assertions.assertEquals("LOAN_U82_0001", loanProduct.getProductCode());
+        boolean success = bank.subscribeLoan(testUser1, "LOAN_U82_0001");
+        Assertions.assertTrue(success);
     }
+
+
+
+
 
 }

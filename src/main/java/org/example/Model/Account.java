@@ -3,7 +3,6 @@ package org.example.Model;
 import jakarta.persistence.*;
 
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -33,6 +32,9 @@ public class Account {
 
     @OneToMany(mappedBy = "toAccount")
     private List<Transaction> incomingTransactions;
+
+    @OneToMany(mappedBy = "subscribedAccount")
+    private List<LoanSubscription> subscriptions;
 
     public Account() {
 

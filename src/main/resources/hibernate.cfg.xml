@@ -22,5 +22,10 @@
         <!-- List of XML mapping files -->
         <mapping class = "org.example.Model.Account"/>
         <mapping class = "org.example.Model.Transaction"/>
+        <mapping class = "org.example.Model.Product.LoanProduct"/>
+        <mapping class = "org.example.Model.LoanSubscription"/>
+        <mapping class = "org.example.Model.Product.SavingProduct"/>
+        <mapping class = "org.example.Model.SavingSubscription"/>
+
     </session-factory>
 </hibernate-configuration>

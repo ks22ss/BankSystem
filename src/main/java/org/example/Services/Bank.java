@@ -1,8 +1,8 @@
 package org.example.Services;
 import org.example.DBConnection;
-import org.example.Model.Account;
-import org.example.Model.Transaction;
-import org.example.Model.TransactionType;
+import org.example.Model.*;
+import org.example.Model.Product.LoanProduct;
+import org.example.Model.Product.SavingProduct;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import java.util.List;
@@ -25,15 +25,103 @@ public class Bank {
         interestRateSaving = interestRate;
     }
 
-    public void distributeInterest() {
+    public void addLoanProduct(LoanProduct loanProduct) {
+        SessionFactory sessionFactory = DBConnection.getSessionFactory();
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        session.persist(loanProduct);
+        session.getTransaction().commit();
+        session.close();
+    }
+
+    public void addSavingProduct(SavingProduct savingProduct) {
+        SessionFactory sessionFactory = DBConnection.getSessionFactory();
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        session.persist(savingProduct);
+        session.getTransaction().commit();
+        session.close();
+    }
+
+    public LoanProduct getLoanProduct(String loanProductCode) {
+        SessionFactory sessionFactory = DBConnection.getSessionFactory();
+        Session session = sessionFactory.openSession();
+        LoanProduct loanProduct = session.get(LoanProduct.class, loanProductCode);
+        session.close();
+        return loanProduct;
+    }
+    public SavingProduct getSavingProduct(String savingProductCode) {
+        SessionFactory sessionFactory = DBConnection.getSessionFactory();
+        Session session = sessionFactory.openSession();
+        SavingProduct savingProduct = session.get(SavingProduct.class, savingProductCode);
+        session.close();
+        return savingProduct;
+    }
+
+    public List<LoanProduct> getAllLoanProduct() {
+        SessionFactory sessionFactory = DBConnection.getSessionFactory();
+        Session session = sessionFactory.openSession();
+        String hql = "FROM LoanProduct";
+        List<LoanProduct> resultList = session.createQuery(hql, LoanProduct.class).getResultList();
+        session.close();
+        return resultList;
+    }
+    public List<SavingProduct> getAllSavingProduct() {
+        SessionFactory sessionFactory = DBConnection.getSessionFactory();
+        Session session = sessionFactory.openSession();
+        String hql = "FROM SavingProduct";
+        List<SavingProduct> resultList = session.createQuery(hql, SavingProduct.class).getResultList();
+        session.close();
+        return resultList;
+    }
+
+    public Boolean subscribeLoan(String userName, String loanProductCode){
+        SessionFactory sessionFactory = DBConnection.getSessionFactory();
+        Session session = sessionFactory.openSession();
+        LoanProduct loanProduct = session.get(LoanProduct.class, loanProductCode);
+        Account account = session.get(Account.class, userName);
+        if(loanProduct.getPrincipal() > account.getBalance()){return false;}
+
+        session.beginTransaction();
+        LoanSubscription loanSub = new LoanSubscription(account, loanProduct);
+        session.persist(loanSub);
+        account.subtractBalance(loanProduct.getPrincipal());
+        session.getTransaction().commit();
+        session.close();
+
+        return true;
+    }
+    public Boolean subscribeSaving(String userName, String savingProductCode){
+        SessionFactory sessionFactory = DBConnection.getSessionFactory();
+        Session session = sessionFactory.openSession();
+        SavingProduct savingProduct = session.get(SavingProduct.class, savingProductCode);
+        Account account = session.get(Account.class, userName);
+        if(savingProduct.getPrinciple() > account.getBalance()){return false;}
+
+        session.beginTransaction();
+        SavingSubscription savingSub = new SavingSubscription(account, savingProduct);
+        session.persist(savingSub);
+        account.subtractBalance(savingProduct.getPrinciple());
+        session.getTransaction().commit();
+        session.close();
+        return true;
+    }
+    public void distributeSavingProductInterest() {
         System.out.println("Begin Distribute Interest.");
         SessionFactory sessionFactory = DBConnection.getSessionFactory();
         List<Account> accounts =  this.queryAllAccount();
         Session session = sessionFactory.openSession();
         session.beginTransaction();
         for (Account account: accounts) {
-            double interestEarn = account.getBalance() * interestRateSaving;
-            account.addToBalance(interestEarn);
+            String hql = "FROM SavingSubscription WHERE subscribed_account = :value";
+            List<SavingSubscription> userSubSavings = session.createQuery(hql, SavingSubscription.class)
+                    .setParameter("value", account.getUserName())
+                    .getResultList();
+            for (SavingSubscription subSaving: userSubSavings) {
+                SavingProduct savingProduct = subSaving.getSubscribedSavingProduct();
+                double interestEarn = savingProduct.getPrinciple() * savingProduct.getInterestRate();
+                account.addToBalance(interestEarn);
+            }
             session.merge(account);
         }
         session.getTransaction().commit();
